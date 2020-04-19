@@ -28,14 +28,14 @@ namespace ToDoApi.Controllers
 
         //GET: api/Todo
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
+        public async Task<ActionResult<IEnumerable<TodoItemDTO>>> GetTodoItems()
         {
-            return await _context.TodoItems.ToListAsync();
+            return await _context.TodoItems.Select(x => ItemToDTO(x)).ToListAsync();
         }
 
         //Get: api/Todo/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<TodoItem>> GetTodoItem(long id)
+        public async Task<ActionResult<TodoItemDTO>> GetTodoItem(long id)
         {
             var todoItem = await _context.TodoItems.FindAsync(id);
 
@@ -44,7 +44,7 @@ namespace ToDoApi.Controllers
                 return NotFound();
             }
 
-            return todoItem;
+            return ItemToDTO(todoItem);
         }
 
         // POST: api/Todo
@@ -56,5 +56,17 @@ namespace ToDoApi.Controllers
 
             return CreatedAtAction(nameof(GetTodoItem), new { id = item.Id }, item);
         }
+
+        private bool ToDoItemExists(long id) => 
+            _context.TodoItems.Any(e => e.Id == id);
+
+        private static TodoItemDTO ItemToDTO(TodoItem todoItem) =>
+            new TodoItemDTO
+            {
+                Id = todoItem.Id,
+                Name = todoItem.Name,
+                IsComplete = todoItem.IsComplete
+            };
+      
     }
 }
